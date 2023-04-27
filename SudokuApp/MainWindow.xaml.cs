@@ -105,6 +105,75 @@ namespace SudokuApp
             return textBox;
         }
 
+        private void CheckButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ValidateSolution())
+            {
+                MessageBox.Show("The solution is correct!", "Correct Solution", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("The solution is incorrect.", "Incorrect Solution", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private bool ValidateSolution()
+        {
+            int[,] board = new int[9, 9];
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    TextBox textBox = GetTextBoxAt(row, col);
+                    int value;
+
+                    if (int.TryParse(textBox.Text, out value) && value >= 1 && value <= 9)
+                    {
+                        board[row, col] = value;
+                    }
+                    else
+                    {
+                        // Invalid value entered
+                        return false;
+                    }
+                }
+            }
+
+            // Check if the Sudoku solution is valid
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    int value = board[row, col];
+
+                    // Check row and column
+                    for (int i = 0; i < 9; i++)
+                    {
+                        if ((i != col && board[row, i] == value) || (i != row && board[i, col] == value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    // Check 3x3 box
+                    int boxStartRow = row - row % 3;
+                    int boxStartCol = col - col % 3;
+
+                    for (int r = boxStartRow; r < boxStartRow + 3; r++)
+                    {
+                        for (int c = boxStartCol; c < boxStartCol + 3; c++)
+                        {
+                            if (r != row && c != col && board[r, c] == value)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
 
     }
 }

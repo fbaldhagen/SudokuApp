@@ -163,6 +163,7 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
             <Button x:Name="NewGameButton" Content="New Game" Margin="5" Padding="10,5" Click="NewGameButton_Click"/>
+            <Button x:Name="CheckButton" Content="Check" Margin="5" Click="CheckButton_Click" />
             <Button x:Name="SolveButton" Content="Solve" Margin="5" Padding="10,5" Click="SolveButton_Click"/>
             <Button x:Name="ClearButton" Content="Clear" Margin="5" Padding="10,5" Click="ClearButton_Click"/>
         </StackPanel>
