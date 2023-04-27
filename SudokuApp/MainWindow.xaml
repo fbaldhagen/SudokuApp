@@ -11,7 +11,7 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" BorderBrush="Black" BorderThickness="1.5" Margin="5" Padding="0">
-            <Grid x:Name="SudokuGrid" Margin="0" Width="270">
+            <Grid x:Name="SudokuGrid" Margin="0" Width="540">
                 <Grid.RowDefinitions>
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
@@ -24,17 +24,18 @@
                 </Grid.ColumnDefinitions>
                 <Grid.Resources>
                     <Style TargetType="TextBox">
-                        <Setter Property="Width" Value="30"/>
-                        <Setter Property="Height" Value="30"/>
+                        <Setter Property="Width" Value="60"/>
+                        <Setter Property="Height" Value="60"/>
                         <Setter Property="Margin" Value="0"/>
-                        <Setter Property="Padding" Value="0,3" />
+                        <Setter Property="Padding" Value="0,0" />
                         <Setter Property="HorizontalAlignment" Value="Center"/>
                         <Setter Property="VerticalAlignment" Value="Center"/>
                         <Setter Property="TextAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
                         <Setter Property="MaxLength" Value="1"/>
-                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontSize" Value="20"/>
                         <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="BorderBrush" Value="LightGray"/>
+                        <Setter Property="BorderBrush" Value="Gray"/>
                         <Setter Property="BorderThickness" Value="1" />
                         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                     </Style>
@@ -129,7 +130,7 @@
                         <TextBox x:Name="Cell59" />
                         <TextBox x:Name="Cell60" />
                         <TextBox x:Name="Cell61" />
-                        <TextBox x:Name="Cell62" />
+                        <TextBox x:Name="Cell62"/>
                     </UniformGrid>
                 </Border>
                 <Border BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.Row="2">
@@ -163,7 +164,8 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
             <Button x:Name="NewGameButton" Content="New Game" Margin="5" Padding="10,5" Click="NewGameButton_Click"/>
-            <Button x:Name="CheckButton" Content="Check" Margin="5" Click="CheckButton_Click" />
+            <Button x:Name="CheckButton" Content="Check" Margin="5" Padding="10,5" Click="CheckButton_Click" />
+            <Button x:Name="ResetButton" Content="Reset" Margin="5" Padding="10,5" Click="ResetButton_Click" />
             <Button x:Name="SolveButton" Content="Solve" Margin="5" Padding="10,5" Click="SolveButton_Click"/>
             <Button x:Name="ClearButton" Content="Clear" Margin="5" Padding="10,5" Click="ClearButton_Click"/>
         </StackPanel>

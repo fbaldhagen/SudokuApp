@@ -44,6 +44,7 @@ namespace SudokuApp
                     int value = newPuzzle[row, col];
                     textBox.Text = value == 0 ? string.Empty : value.ToString();
                     textBox.IsReadOnly = value != 0;
+                    textBox.Background = value == 0 ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.LightGray);
                 }
             }
 
@@ -90,6 +91,8 @@ namespace SudokuApp
                 {
                     TextBox textBox = GetTextBoxAt(row, col); 
                     textBox.Text = string.Empty;
+                    textBox.IsReadOnly = false;
+                    textBox.Background = new SolidColorBrush(Colors.White);
                 }
             }
         }
@@ -114,9 +117,26 @@ namespace SudokuApp
             }
             else
             {
-                MessageBox.Show("The solution is incorrect.", "Incorrect Solution", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("The solution is incorrect/incomplete.", "Incorrect Solution", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    TextBox textBox = GetTextBoxAt(row, col);
+                    if (!textBox.IsReadOnly)
+                    {
+                        textBox.Text = string.Empty;
+                    }
+                }
+            }
+        }
+
+
         private bool ValidateSolution()
         {
             int[,] board = new int[9, 9];
@@ -175,6 +195,8 @@ namespace SudokuApp
 
             return true;
         }
+
+
 
     }
 }

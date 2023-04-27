@@ -112,7 +112,7 @@ namespace SudokuApp.Models
             return false;
         }
 
-        private bool IsSafe(int i, int j, int num, int[,] board)
+        public static bool IsSafe(int i, int j, int num, int[,] board)
         {
             return (ValidRow(i, num, board) &&
         ValidCol(j, num, board) &&
