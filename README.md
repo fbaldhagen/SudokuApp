@@ -10,8 +10,6 @@ The application provides a user-friendly interface to input, solve, or generate 
 - Check the correctness of a filled-in Sudoku puzzle
 - User-friendly interface for easy interaction
 
- Build and run the application by pressing `F5` or by clicking the "Start" button in Visual Studio.
-
 ## Usage
 
 The application provides a simple interface for users to interact with Sudoku puzzles. You can either input your own Sudoku puzzle or generate a new one. 
