@@ -43,6 +43,7 @@ namespace SudokuApp
                     TextBox textBox = GetTextBoxAt(row, col);
                     int value = newPuzzle[row, col];
                     textBox.Text = value == 0 ? string.Empty : value.ToString();
+                    textBox.IsReadOnly = value != 0;
                 }
             }
 
