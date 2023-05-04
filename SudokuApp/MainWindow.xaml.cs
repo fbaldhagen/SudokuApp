@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -13,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.Timers;
 
 namespace SudokuApp
 {
@@ -21,64 +24,119 @@ namespace SudokuApp
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private System.Timers.Timer _timer;
+        private int _elapsedSeconds;
+
         public MainWindow()
         {
             InitializeComponent();
+            InitializeTimer();
+        }
+
+        private void InitializeTimer()
+        {
+            _timer = new System.Timers.Timer(1000); // Interval in milliseconds
+            _timer.Elapsed += Timer_Elapsed;
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            _elapsedSeconds++;
+            Dispatcher.Invoke(() =>
+            {
+                TimerTextBlock.Text = TimeSpan.FromSeconds(_elapsedSeconds).ToString(@"hh\:mm\:ss");
+            });
+        }
+
+        private void StartTimer()
+        {
+            _elapsedSeconds = 0;
+            _timer.Start();
+        }
+
+        private void StopTimer()
+        {
+            _timer.Stop();
         }
 
         private async void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
-            NewGameButton.IsEnabled = false;
-            SolveButton.IsEnabled = false;
-            ClearButton.IsEnabled = false;
-
-            SudokuGenerator generator = new SudokuGenerator();
-
-            int[,] newPuzzle = await Task.Run(() => generator.Generate());
-
-            for (int row = 0; row < 9; row++)
+            
+            CustomMessageBox messageBox = new CustomMessageBox(this, "Do you want to generate a new puzzle?\nThis action cannot be undone.", "Generate New Puzzle"); // Using custom message boxes so the location is the center of the main window.
+            messageBox.ShowDialog();
+            MessageBoxResult result = messageBox.Result;
+            
+            if (result == MessageBoxResult.Yes)
             {
-                for (int col = 0; col < 9; col++)
-                {
-                    TextBox textBox = GetTextBoxAt(row, col);
-                    int value = newPuzzle[row, col];
-                    textBox.Text = value == 0 ? string.Empty : value.ToString();
-                    textBox.IsReadOnly = value != 0;
-                    textBox.Background = value == 0 ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.LightGray);
-                }
-            }
+                NewGameButton.IsEnabled = false;
+                SolveButton.IsEnabled = false;
+                ClearButton.IsEnabled = false;
 
-            NewGameButton.IsEnabled = true;
-            SolveButton.IsEnabled = true;
-            ClearButton.IsEnabled = true;
+                SudokuGenerator generator = new SudokuGenerator();
+
+                int[,] newPuzzle = await Task.Run(() => generator.Generate());
+                StartTimer();
+
+                for (int row = 0; row < 9; row++)
+                {
+                    for (int col = 0; col < 9; col++)
+                    {
+                        TextBox textBox = GetTextBoxAt(row, col);
+                        int value = newPuzzle[row, col];
+                        textBox.Text = value == 0 ? string.Empty : value.ToString();
+                        textBox.IsReadOnly = value != 0;
+                        textBox.Background = value == 0 ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.LightGray);
+                    }
+                }
+
+                NewGameButton.IsEnabled = true;
+                SolveButton.IsEnabled = true;
+                ClearButton.IsEnabled = true; 
+            }
         }
 
 
 
         private void SolveButton_Click(object sender, RoutedEventArgs e)
         {
-            int[,] board = new int[9, 9];
+            CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to solve the puzzle?\nThis action cannot be undone.", "Solve Puzzle"); // Using custom message boxes so the location is the center of the main window.
+            messageBox.ShowDialog();
+            MessageBoxResult result = messageBox.Result;
 
-            for (int row = 0; row < 9; row++)
+            if (result == MessageBoxResult.Yes)
             {
-                for (int col = 0; col < 9; col++)
-                {
-                    TextBox textBox = GetTextBoxAt(row, col); 
-                    int.TryParse(textBox.Text, out int value);
-                    board[row, col] = value;
-                }
-            }
+                NewGameButton.IsEnabled = false;
+                SolveButton.IsEnabled = false;
+                ClearButton.IsEnabled = false;
 
-            SudokuGenerator solver = new SudokuGenerator();
-            solver.Solve(board);
+                int[,] board = new int[9, 9];
 
-            for (int row = 0; row < 9; row++)
-            {
-                for (int col = 0; col < 9; col++)
+                for (int row = 0; row < 9; row++)
                 {
-                    TextBox textBox = GetTextBoxAt(row, col);
-                    textBox.Text = board[row, col].ToString();
+                    for (int col = 0; col < 9; col++)
+                    {
+                        TextBox textBox = GetTextBoxAt(row, col);
+                        int.TryParse(textBox.Text, out int value);
+                        board[row, col] = value;
+                    }
                 }
+
+                SudokuGenerator solver = new SudokuGenerator();
+                solver.Solve(board);
+
+                for (int row = 0; row < 9; row++)
+                {
+                    for (int col = 0; col < 9; col++)
+                    {
+                        TextBox textBox = GetTextBoxAt(row, col);
+                        textBox.Text = board[row, col].ToString();
+                    }
+                }
+
+                NewGameButton.IsEnabled = true;
+                SolveButton.IsEnabled = true;
+                ClearButton.IsEnabled = true;
             }
         }
 
@@ -113,6 +171,7 @@ namespace SudokuApp
         {
             if (ValidateSolution())
             {
+                StopTimer();
                 MessageBox.Show("The solution is correct!", "Correct Solution", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else

@@ -223,7 +223,7 @@ namespace SudokuApp.Models
 
         private void RemoveNumbers(int[,] board)
         {
-            int minRemovedCells = 20; // Minimum number of cells to remove
+            int minRemovedCells = 25; // Minimum number of cells to remove
             int maxRemovedCells = 40; // Maximum number of cells to remove
             int count = 0;
 
