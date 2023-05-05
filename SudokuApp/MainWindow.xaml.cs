@@ -60,6 +60,17 @@ namespace SudokuApp
             _timer.Stop();
         }
 
+        private void ResetAndUpdateTimer()
+        {
+            _timer.Stop();
+            _elapsedSeconds = 0;
+            Dispatcher.Invoke(() =>
+            {
+                TimerTextBlock.Text = TimeSpan.FromSeconds(_elapsedSeconds).ToString(@"hh\:mm\:ss");
+            });
+        }
+
+
         private async void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
             
@@ -143,15 +154,23 @@ namespace SudokuApp
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
-            for (int row = 0; row < 9; row++)
+            CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to clear the board?\nYou will lose any progress made.", "Clear board?");
+            messageBox.ShowDialog();
+            MessageBoxResult result = messageBox.Result;
+            if (result == MessageBoxResult.Yes)
             {
-                for (int col = 0; col < 9; col++)
+                for (int row = 0; row < 9; row++)
                 {
-                    TextBox textBox = GetTextBoxAt(row, col); 
-                    textBox.Text = string.Empty;
-                    textBox.IsReadOnly = false;
-                    textBox.Background = new SolidColorBrush(Colors.White);
+                    for (int col = 0; col < 9; col++)
+                    {
+                        TextBox textBox = GetTextBoxAt(row, col);
+                        textBox.Text = string.Empty;
+                        textBox.IsReadOnly = false;
+                        textBox.Background = new SolidColorBrush(Colors.White);
+                    }
                 }
+
+                ResetAndUpdateTimer(); 
             }
         }
         private TextBox GetTextBoxAt(int row, int col)
@@ -254,8 +273,5 @@ namespace SudokuApp
 
             return true;
         }
-
-
-
     }
 }
