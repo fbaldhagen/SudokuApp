@@ -38,6 +38,7 @@ namespace SudokuApp
         {
             _timer = new System.Timers.Timer(1000); // Interval in milliseconds
             _timer.Elapsed += Timer_Elapsed;
+            ResetAndUpdateTimer();
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
