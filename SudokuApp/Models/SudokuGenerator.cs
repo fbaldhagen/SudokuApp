@@ -10,6 +10,7 @@ namespace SudokuApp.Models
     public class SudokuGenerator
     {
         private static readonly Random random = new Random();
+        public event EventHandler<int[,]> OnSolveStep;
 
         public int[,] Generate()
         {
@@ -223,8 +224,8 @@ namespace SudokuApp.Models
 
         private void RemoveNumbers(int[,] board)
         {
-            int minRemovedCells = 25; // Minimum number of cells to remove
-            int maxRemovedCells = 40; // Maximum number of cells to remove
+            int minRemovedCells = 45; // Minimum number of cells to remove
+            int maxRemovedCells = 65; // Maximum number of cells to remove
             int count = 0;
 
             while (count < maxRemovedCells)
@@ -306,6 +307,57 @@ namespace SudokuApp.Models
                     board[row, col] = 0;
                 }
             }
+        }
+
+        public async Task<bool> ShowSolve(int[,] board, int visualizationDelay)
+        {
+            int row = -1;
+            int col = -1;
+            bool isEmpty = true;
+
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if (board[i, j] == 0)
+                    {
+                        row = i;
+                        col = j;
+                        isEmpty = false;
+                        break;
+                    }
+                }
+                if (!isEmpty)
+                {
+                    break;
+                }
+            }
+
+            if (isEmpty)
+            {
+                return true;
+            }
+
+            for (int num = 1; num <= 9; num++)
+            {
+                if (IsSafe(row, col, num, board))
+                {
+                    board[row, col] = num;
+                    OnSolveStep?.Invoke(this, board);
+                    await Task.Delay(visualizationDelay); // adjust the delay time (in milliseconds) to control the speed of the visualization
+                    if (await ShowSolve(board, visualizationDelay))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        board[row, col] = 0;
+                    }
+                }
+
+            }
+
+            return false;
         }
 
     }

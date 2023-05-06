@@ -155,7 +155,7 @@ namespace SudokuApp
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
-            CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to clear the board?\nYou will lose any progress made.", "Clear board?");
+            CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to clear the entire board?\nYou will lose any progress made and you will not be able to finish the puzzle.", "Clear board?");
             messageBox.ShowDialog();
             MessageBoxResult result = messageBox.Result;
             if (result == MessageBoxResult.Yes)
@@ -274,5 +274,83 @@ namespace SudokuApp
 
             return true;
         }
+
+        private int[,] GetCurrentBoard()
+        {
+            int[,] board = new int[9, 9];
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    TextBox textBox = GetTextBoxAt(row, col);
+                    int.TryParse(textBox.Text, out int value);
+                    board[row, col] = value;
+                }
+            }
+            return board;
+        }
+
+
+        private void UpdateUIFromBoard(int[,] board)
+        {
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    TextBox textBox = GetTextBoxAt(row, col);
+                    int value = board[row, col];
+                    textBox.Text = value == 0 ? string.Empty : value.ToString();
+                }
+            }
+        }
+
+
+        private async void Generator_OnSolveStep(object sender, int[,] board)
+        {
+            await Dispatcher.InvokeAsync(() => UpdateUIFromBoard(board));
+        }
+
+
+
+        private async void VisualizeSolveButton_Click(object sender, RoutedEventArgs e)
+        {
+            NewGameButton.IsEnabled = false;
+            CheckButton.IsEnabled = false;
+            ResetButton.IsEnabled = false;
+            ClearButton.IsEnabled = false;
+
+            SolveButton.IsEnabled = false;
+            VisualizeSolveButton.IsEnabled = false;
+            VisualizationSpeedSlider.IsEnabled = false;
+
+
+
+
+            int[,] board = GetCurrentBoard();
+            int visualizationDelay = (int)VisualizationSpeedSlider.Value;
+
+            SudokuGenerator generator = new SudokuGenerator();
+            generator.OnSolveStep += Generator_OnSolveStep;
+            bool isSolved = await generator.ShowSolve(board, visualizationDelay);
+
+            if (isSolved)
+            {
+                UpdateUIFromBoard(board);
+            }
+            else
+            {
+                // You can show a message if the puzzle could not be solved.
+            }
+
+            NewGameButton.IsEnabled = true;
+            CheckButton.IsEnabled = true;
+            ResetButton.IsEnabled = true;
+            ClearButton.IsEnabled = true;
+
+            SolveButton.IsEnabled = true;
+            VisualizeSolveButton.IsEnabled = true;
+            VisualizationSpeedSlider.IsEnabled = true;
+        }
+
     }
 }
