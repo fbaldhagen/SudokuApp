@@ -28,11 +28,13 @@ namespace SudokuApp
             Result = MessageBoxResult.None;
         }
 
+
         private void YesButton_Click(object sender, RoutedEventArgs e)
         {
             Result = MessageBoxResult.Yes;
             Close();
         }
+
 
         private void NoButton_Click(object sender, RoutedEventArgs e)
         {

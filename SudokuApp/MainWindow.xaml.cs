@@ -28,12 +28,18 @@ namespace SudokuApp
         private System.Timers.Timer _timer;
         private int _elapsedSeconds;
 
+        /// <summary>
+        /// Initializes the MainWindow instance, setting up the UI and timer.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
             InitializeTimer();
         }
 
+        /// <summary>
+        /// Initializes the timer, sets the interval, and adds an event handler.
+        /// </summary>
         private void InitializeTimer()
         {
             _timer = new System.Timers.Timer(1000); // Interval in milliseconds
@@ -41,6 +47,9 @@ namespace SudokuApp
             ResetAndUpdateTimer();
         }
 
+        /// <summary>
+        /// Updates the timer display each time the interval elapses.
+        /// </summary>
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _elapsedSeconds++;
@@ -50,17 +59,26 @@ namespace SudokuApp
             });
         }
 
+        /// <summary>
+        /// Starts the timer and resets the elapsed time.
+        /// </summary>
         private void StartTimer()
         {
             _elapsedSeconds = 0;
             _timer.Start();
         }
 
+        /// <summary>
+        /// Stops the timer.
+        /// </summary>
         private void StopTimer()
         {
             _timer.Stop();
         }
 
+        /// <summary>
+        /// Resets the timer and updates the timer display.
+        /// </summary>
         private void ResetAndUpdateTimer()
         {
             _timer.Stop();
@@ -71,7 +89,10 @@ namespace SudokuApp
             });
         }
 
-
+        /// <summary>
+        /// Generates a new Sudoku puzzle when the "New Game" button is clicked.
+        /// Asks for user confirmation before generating a new puzzle.
+        /// </summary>
         private async void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
             
@@ -81,9 +102,7 @@ namespace SudokuApp
             
             if (result == MessageBoxResult.Yes)
             {
-                NewGameButton.IsEnabled = false;
-                SolveButton.IsEnabled = false;
-                ClearButton.IsEnabled = false;
+                DisableButtons();
 
                 SudokuGenerator generator = new SudokuGenerator();
 
@@ -101,15 +120,14 @@ namespace SudokuApp
                         textBox.Background = value == 0 ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.LightGray);
                     }
                 }
-
-                NewGameButton.IsEnabled = true;
-                SolveButton.IsEnabled = true;
-                ClearButton.IsEnabled = true; 
+                EnableButtons();
             }
         }
 
-
-
+        /// <summary>
+        /// Solves the current Sudoku puzzle when the "Solve" button is clicked.
+        /// Asks for user confirmation before solving the puzzle.
+        /// </summary>
         private void SolveButton_Click(object sender, RoutedEventArgs e)
         {
             CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to solve the puzzle?\nThis action cannot be undone.", "Solve Puzzle"); // Using custom message boxes so the location is the center of the main window.
@@ -118,9 +136,7 @@ namespace SudokuApp
 
             if (result == MessageBoxResult.Yes)
             {
-                NewGameButton.IsEnabled = false;
-                SolveButton.IsEnabled = false;
-                ClearButton.IsEnabled = false;
+                DisableButtons();
 
                 int[,] board = new int[9, 9];
 
@@ -145,14 +161,14 @@ namespace SudokuApp
                         textBox.Text = board[row, col].ToString();
                     }
                 }
-
-                NewGameButton.IsEnabled = true;
-                SolveButton.IsEnabled = true;
-                ClearButton.IsEnabled = true;
+                EnableButtons();
             }
         }
 
-
+        /// <summary>
+        /// Clears the entire Sudoku board when the "Clear" button is clicked.
+        /// Asks for user confirmation before clearing the board.
+        /// </summary>
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to clear the entire board?\nYou will lose any progress made and you will not be able to finish the puzzle.", "Clear board?");
@@ -174,6 +190,13 @@ namespace SudokuApp
                 ResetAndUpdateTimer(); 
             }
         }
+
+        /// <summary>
+        /// Retrieves a TextBox instance at a given row and column index.
+        /// </summary>
+        /// <param name="row">Row index of the TextBox to retrieve.</param>
+        /// <param name="col">Column index of the TextBox to retrieve.</param>
+        /// <returns>The TextBox instance at the specified row and column.</returns>
         private TextBox GetTextBoxAt(int row, int col)
         {
             int boxRow = row / 3;
@@ -187,6 +210,10 @@ namespace SudokuApp
             return textBox;
         }
 
+        /// <summary>
+        /// Validates the current Sudoku solution entered by the user when the "Check" button is clicked.
+        /// Shows a message box indicating whether the solution is correct or incorrect/incomplete.
+        /// </summary>
         private void CheckButton_Click(object sender, RoutedEventArgs e)
         {
             if (ValidateSolution())
@@ -200,6 +227,9 @@ namespace SudokuApp
             }
         }
 
+        /// <summary>
+        /// Resets all non-fixed cells on the Sudoku board to their initial empty state when the "Reset" button is clicked.
+        /// </summary>
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
             for (int row = 0; row < 9; row++)
@@ -215,7 +245,10 @@ namespace SudokuApp
             }
         }
 
-
+        /// <summary>
+        /// Validates the current Sudoku solution entered by the user.
+        /// </summary>
+        /// <returns>True if the solution is valid, otherwise false.</returns>
         private bool ValidateSolution()
         {
             int[,] board = new int[9, 9];
@@ -275,6 +308,10 @@ namespace SudokuApp
             return true;
         }
 
+        /// <summary>
+        /// Retrieves the current state of the Sudoku puzzle from the UI.
+        /// </summary>
+        /// <returns>A 9x9 integer array representing the current Sudoku puzzle state.</returns>
         private int[,] GetCurrentBoard()
         {
             int[,] board = new int[9, 9];
@@ -290,7 +327,10 @@ namespace SudokuApp
             return board;
         }
 
-
+        /// <summary>
+        /// Updates the UI based on the provided Sudoku puzzle state.
+        /// </summary>
+        /// <param name="board">A 9x9 integer array representing the Sudoku puzzle state to be displayed on the UI.</param>
         private void UpdateUIFromBoard(int[,] board)
         {
             for (int row = 0; row < 9; row++)
@@ -304,27 +344,25 @@ namespace SudokuApp
             }
         }
 
-
+        /// <summary>
+        /// Handles the OnSolveStep event of the SudokuGenerator. Updates the UI with the provided board state.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="board">A 9x9 integer array representing the current state of the Sudoku puzzle during the solving process.</param>
         private async void Generator_OnSolveStep(object sender, int[,] board)
         {
             await Dispatcher.InvokeAsync(() => UpdateUIFromBoard(board));
         }
 
 
-
+        /// <summary>
+        /// Handles the VisualizeSolveButton click event. Disables UI elements, visualizes the solving process, and updates the UI based on the result.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">The event data.</param>
         private async void VisualizeSolveButton_Click(object sender, RoutedEventArgs e)
         {
-            NewGameButton.IsEnabled = false;
-            CheckButton.IsEnabled = false;
-            ResetButton.IsEnabled = false;
-            ClearButton.IsEnabled = false;
-
-            SolveButton.IsEnabled = false;
-            VisualizeSolveButton.IsEnabled = false;
-            VisualizationSpeedSlider.IsEnabled = false;
-
-
-
+            DisableButtons();
 
             int[,] board = GetCurrentBoard();
             int visualizationDelay = (int)VisualizationSpeedSlider.Value;
@@ -339,9 +377,32 @@ namespace SudokuApp
             }
             else
             {
-                // You can show a message if the puzzle could not be solved.
+                // message if the puzzle coulnt be solved? 
             }
 
+            EnableButtons();
+        }
+
+        /// <summary>
+        /// Disables the UI elements (buttons and slider) by setting their IsEnabled properties to false.
+        /// </summary>
+        private void DisableButtons()
+        {
+            NewGameButton.IsEnabled = false;
+            CheckButton.IsEnabled = false;
+            ResetButton.IsEnabled = false;
+            ClearButton.IsEnabled = false;
+
+            SolveButton.IsEnabled = false;
+            VisualizeSolveButton.IsEnabled = false;
+            VisualizationSpeedSlider.IsEnabled = false;
+        }
+
+        /// <summary>
+        /// Enables the UI elements (buttons and slider) by setting their IsEnabled properties to true.
+        /// </summary>
+        private void EnableButtons()
+        {
             NewGameButton.IsEnabled = true;
             CheckButton.IsEnabled = true;
             ResetButton.IsEnabled = true;
@@ -351,6 +412,5 @@ namespace SudokuApp
             VisualizeSolveButton.IsEnabled = true;
             VisualizationSpeedSlider.IsEnabled = true;
         }
-
     }
 }
