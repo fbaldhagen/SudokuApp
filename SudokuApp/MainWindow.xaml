@@ -181,6 +181,7 @@
                     <Slider x:Name="VisualizationSpeedSlider" Minimum="1" Maximum="200" Value="50" SmallChange="5" LargeChange="10"  Width="150"/>
                     <TextBlock Text="{Binding ElementName=VisualizationSpeedSlider, Path=Value, StringFormat='Delay: {0:F0} ms'}" HorizontalAlignment="Center"/>
                 </StackPanel>
+                <Button x:Name="CancelButton" Content="Cancel" Margin="5" Padding="10,5" Click="CancelButton_Click" IsEnabled="False"/>
             </StackPanel>
         </StackPanel>
         

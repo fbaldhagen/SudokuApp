@@ -27,6 +27,8 @@ namespace SudokuApp
 
         private System.Timers.Timer _timer;
         private int _elapsedSeconds;
+        private CancellationTokenSource _cancellationTokenSource;
+
 
         /// <summary>
         /// Initializes the MainWindow instance, setting up the UI and timer.
@@ -232,6 +234,11 @@ namespace SudokuApp
         /// </summary>
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetGrid();
+        }
+
+        private void ResetGrid()
+        {
             for (int row = 0; row < 9; row++)
             {
                 for (int col = 0; col < 9; col++)
@@ -356,20 +363,32 @@ namespace SudokuApp
 
 
         /// <summary>
-        /// Handles the VisualizeSolveButton click event. Disables UI elements, visualizes the solving process, and updates the UI based on the result.
+        /// Handles the VisualizeSolveButton click event. Disables UI elements, visualizes the solving process,
+        /// updates the UI based on the result, and handles cancellation if the user decides to stop the visualization.
         /// </summary>
         /// <param name="sender">The object that raised the event.</param>
         /// <param name="e">The event data.</param>
         private async void VisualizeSolveButton_Click(object sender, RoutedEventArgs e)
         {
             DisableButtons();
+            CancelButton.IsEnabled = true;
+            _cancellationTokenSource = new CancellationTokenSource();
 
             int[,] board = GetCurrentBoard();
             int visualizationDelay = (int)VisualizationSpeedSlider.Value;
 
             SudokuGenerator generator = new SudokuGenerator();
             generator.OnSolveStep += Generator_OnSolveStep;
-            bool isSolved = await generator.ShowSolve(board, visualizationDelay);
+
+            bool isSolved = false;
+            try
+            {
+                isSolved = await generator.ShowSolve(board, visualizationDelay, _cancellationTokenSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                ResetGrid();
+            }
 
             if (isSolved)
             {
@@ -377,10 +396,17 @@ namespace SudokuApp
             }
             else
             {
-                // message if the puzzle coulnt be solved? 
+                // message if the puzzle couldn't be solved
             }
-
+            CancelButton.IsEnabled = false;
             EnableButtons();
+        }
+
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            _cancellationTokenSource?.Cancel();
+            CancelButton.IsEnabled = false;
         }
 
         /// <summary>
@@ -396,6 +422,7 @@ namespace SudokuApp
             SolveButton.IsEnabled = false;
             VisualizeSolveButton.IsEnabled = false;
             VisualizationSpeedSlider.IsEnabled = false;
+
         }
 
         /// <summary>

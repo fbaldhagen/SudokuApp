@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -351,7 +352,7 @@ namespace SudokuApp.Models
         /// <summary>
         /// Visualizes the process of solving a Sudoku puzzle with a delay between steps.
         /// </summary>
-        public async Task<bool> ShowSolve(int[,] board, int visualizationDelay)
+        public async Task<bool> ShowSolve(int[,] board, int visualizationDelay, CancellationToken cancellationToken)
         {
             (int row, int col) = FindEmptyCell(board);
 
@@ -366,9 +367,9 @@ namespace SudokuApp.Models
                 {
                     board[row, col] = num;
                     OnSolveStep?.Invoke(this, board);
-                    await Task.Delay(visualizationDelay); // adjust the delay time (in milliseconds) to control the speed of the visualization
+                    await Task.Delay(visualizationDelay, cancellationToken);
 
-                    if (await ShowSolve(board, visualizationDelay))
+                    if (await ShowSolve(board, visualizationDelay, cancellationToken))
                     {
                         return true;
                     }
