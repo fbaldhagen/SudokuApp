@@ -130,7 +130,7 @@ namespace SudokuApp
         /// Solves the current Sudoku puzzle when the "Solve" button is clicked.
         /// Asks for user confirmation before solving the puzzle.
         /// </summary>
-        private void SolveButton_Click(object sender, RoutedEventArgs e)
+        private async void SolveButton_Click(object sender, RoutedEventArgs e)
         {
             CustomMessageBox messageBox = new CustomMessageBox(this, "Are you sure you want to solve the puzzle?\nThis action cannot be undone.", "Solve Puzzle"); // Using custom message boxes so the location is the center of the main window.
             messageBox.ShowDialog();
@@ -153,16 +153,25 @@ namespace SudokuApp
                 }
 
                 SudokuGenerator solver = new SudokuGenerator();
-                solver.Solve(board);
+                bool isSolved = await Task.Run(() => solver.Solve(board, 5000));
 
-                for (int row = 0; row < 9; row++)
+                if (isSolved)
                 {
-                    for (int col = 0; col < 9; col++)
+                    for (int row = 0; row < 9; row++)
                     {
-                        TextBox textBox = GetTextBoxAt(row, col);
-                        textBox.Text = board[row, col].ToString();
+                        for (int col = 0; col < 9; col++)
+                        {
+                            TextBox textBox = GetTextBoxAt(row, col);
+                            textBox.Text = board[row, col].ToString();
+                        }
                     }
                 }
+                else
+                {
+                    MessageBox.Show("The puzzle couldn't be solved. Make sure your entries are correct.", "Couldn't solve", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+
                 EnableButtons();
             }
         }
@@ -377,6 +386,14 @@ namespace SudokuApp
             int[,] board = GetCurrentBoard();
             int visualizationDelay = (int)VisualizationSpeedSlider.Value;
 
+            if (!SudokuGenerator.IsValidPuzzle(board))
+            {
+                MessageBox.Show("The puzzle is invalid and cannot be solved.", "Invalid Puzzle", MessageBoxButton.OK, MessageBoxImage.Error);
+                CancelButton.IsEnabled = false;
+                EnableButtons();
+                return;
+            }
+
             SudokuGenerator generator = new SudokuGenerator();
             generator.OnSolveStep += Generator_OnSolveStep;
 
@@ -385,7 +402,7 @@ namespace SudokuApp
             {
                 isSolved = await generator.ShowSolve(board, visualizationDelay, _cancellationTokenSource.Token);
             }
-            catch (TaskCanceledException)
+            catch (Exception ex)  when (ex is TaskCanceledException ||  ex is OperationCanceledException)
             {
                 ResetGrid();
             }

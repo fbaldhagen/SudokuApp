@@ -12,6 +12,9 @@ namespace SudokuApp.Models
     {
         private static readonly Random random = new Random();
         public event EventHandler<int[,]> OnSolveStep;
+        private const int MinRemovedCells = 45;
+        private const int MaxRemovedCells = 65;
+
 
         /// <summary>
         /// Generates a new Sudoku puzzle by filling a grid and removing some numbers.
@@ -205,9 +208,25 @@ namespace SudokuApp.Models
         }
 
         /// <summary>
-        /// Solves the Sudoku puzzle using a backtracking algorithm.
+        /// Solves the Sudoku puzzle using a backtracking algorithm with a time-out.
         /// </summary>
-        public bool Solve(int[,] board)
+        /// <param name="board">The Sudoku board represented as a 9x9 integer array.</param>
+        /// <param name="timeOut">The maximum allowed time (in milliseconds) for solving the puzzle.</param>
+        /// <returns>True if the puzzle is solved within the time limit, false otherwise.</returns>
+        public bool Solve(int[,] board, int timeOut)
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            cts.CancelAfter(timeOut);
+            return SolveHelper(board, cts.Token);
+        }
+
+        /// <summary>
+        /// A helper method that solves the Sudoku puzzle using a backtracking algorithm.
+        /// </summary>
+        /// <param name="board">The Sudoku board represented as a 9x9 integer array.</param>
+        /// <param name="cancellationToken">A cancellation token to handle time-outs and cancellations.</param>
+        /// <returns>True if the puzzle is solved, false otherwise.</returns>
+        private bool SolveHelper(int[,] board, CancellationToken cancellationToken)
         {
             int row = -1;
             int col = -1;
@@ -238,10 +257,12 @@ namespace SudokuApp.Models
 
             for (int num = 1; num <= 9; num++)
             {
+                if (cancellationToken.IsCancellationRequested) return false;
+
                 if (IsSafe(row, col, num, board))
                 {
                     board[row, col] = num;
-                    if (Solve(board))
+                    if (SolveHelper(board, cancellationToken))
                     {
                         return true;
                     }
@@ -255,16 +276,15 @@ namespace SudokuApp.Models
             return false;
         }
 
+
         /// <summary>
         /// Removes numbers from the Sudoku grid to create a puzzle.
         /// </summary>
         private void RemoveNumbers(int[,] board)
         {
-            int minRemovedCells = 45; // Minimum number of cells to remove
-            int maxRemovedCells = 65; // Maximum number of cells to remove
             int count = 0;
 
-            while (count < maxRemovedCells)
+            while (count < MaxRemovedCells)
             {
                 int row = random.Next(9);
                 int col = random.Next(9);
@@ -287,7 +307,7 @@ namespace SudokuApp.Models
                 else
                 {
                     board[row, col] = backup;
-                    if (count >= minRemovedCells) // Stop removing cells if the minimum number of removed cells is reached and no more unique solutions can be found
+                    if (count >= MinRemovedCells) // Stop removing cells if the minimum number of removed cells is reached and no more unique solutions can be found
                     {
                         break;
                     }
@@ -354,6 +374,8 @@ namespace SudokuApp.Models
         /// </summary>
         public async Task<bool> ShowSolve(int[,] board, int visualizationDelay, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             (int row, int col) = FindEmptyCell(board);
 
             if (row == -1 && col == -1)
@@ -398,6 +420,36 @@ namespace SudokuApp.Models
                 }
             }
             return (-1, -1);
+        }
+
+        /// <summary>
+        /// Determines whether the given Sudoku puzzle is valid by checking for duplicates
+        /// in each row, column, and 3x3 block.
+        /// </summary>
+        /// <param name="board">A 9x9 integer array representing the Sudoku puzzle.</param>
+        /// <returns>True if the puzzle is valid, false otherwise.</returns>
+        public static bool IsValidPuzzle(int[,] board)
+        {
+            // Check for duplicates in rows, columns, and blocks
+            for (int i = 0; i < 9; i++)
+            {
+                HashSet<int> rowSet = new HashSet<int>();
+                HashSet<int> colSet = new HashSet<int>();
+                HashSet<int> blockSet = new HashSet<int>();
+
+                for (int j = 0; j < 9; j++)
+                {
+                    int rowValue = board[i, j];
+                    int colValue = board[j, i];
+                    int blockValue = board[i / 3 * 3 + j / 3, i % 3 * 3 + j % 3];
+
+                    if (rowValue != 0 && !rowSet.Add(rowValue)) return false;
+                    if (colValue != 0 && !colSet.Add(colValue)) return false;
+                    if (blockValue != 0 && !blockSet.Add(blockValue)) return false;
+                }
+            }
+
+            return true;
         }
     }
 }
