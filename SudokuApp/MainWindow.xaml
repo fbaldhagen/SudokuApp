@@ -171,6 +171,13 @@
                 <Button x:Name="ResetButton" Content="Reset Puzzle" Margin="5" Padding="10,5" Click="ResetButton_Click" />
 
                 <Button x:Name="ClearButton" Content="Clear All" Margin="5" Padding="10,5" Click="ClearButton_Click"/>
+                <ComboBox x:Name="DifficultyComboBox" SelectionChanged="OnDifficultyChanged" SelectedIndex="0" VerticalAlignment="Center" Width="80" Height="30" VerticalContentAlignment="Center">
+                    <ComboBoxItem Content="Easy" />
+                    <ComboBoxItem Content="Medium" />
+                    <ComboBoxItem Content="Hard" />
+                    <ComboBoxItem Content="Evil" />
+                </ComboBox>
+
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +14,32 @@ namespace SudokuApp.Models
     {
         private static readonly Random random = new Random();
         public event EventHandler<int[,]> OnSolveStep;
-        private const int MinRemovedCells = 45;
-        private const int MaxRemovedCells = 65;
+        private static int MinRemovedCells = 36;
+        private static int MaxRemovedCells = 45;
+
+
+        public static void SetDifficulty(int difficulty) 
+        {
+            switch (difficulty)
+            {
+                case 0:
+                    MinRemovedCells = 36;
+                    MaxRemovedCells = 45;
+                    break;
+                case 1:
+                    MinRemovedCells = 46;
+                    MaxRemovedCells = 50;
+                    break;
+                case 2:
+                    MinRemovedCells = 50;
+                    MaxRemovedCells = 55;
+                    break;
+                case 3:
+                    MinRemovedCells = 55;
+                    MaxRemovedCells = 70;
+                    break;
+            }
+        }
 
 
         /// <summary>

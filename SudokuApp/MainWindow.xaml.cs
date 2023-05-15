@@ -456,5 +456,19 @@ namespace SudokuApp
             VisualizeSolveButton.IsEnabled = true;
             VisualizationSpeedSlider.IsEnabled = true;
         }
+
+        /// <summary>
+        /// Event handler for when the selected item in the DifficultyComboBox is changed.
+        /// </summary>
+        /// <param name="sender">The object that initiated the event.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// This method calls the SetDifficulty method in the SudokuGenerator class,
+        /// using the selected index of the DifficultyComboBox as the difficulty level.
+        /// </remarks>
+        private void OnDifficultyChanged(object sender, EventArgs e)
+        {
+            SudokuGenerator.SetDifficulty(DifficultyComboBox.SelectedIndex);
+        }
     }
 }
