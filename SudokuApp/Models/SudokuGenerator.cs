@@ -17,7 +17,20 @@ namespace SudokuApp.Models
         private static int MinRemovedCells = 36;
         private static int MaxRemovedCells = 45;
 
-
+        /// <summary>
+        /// Sets the difficulty of the Sudoku game.
+        /// </summary>
+        /// <param name="difficulty">The difficulty level. The levels are represented by the integers 0 to 3, 
+        /// where 0 is the easiest level and 3 is the hardest.
+        /// The difficulty level determines the number of cells removed from the initial, completed Sudoku grid.
+        /// </param>
+        /// <remarks>
+        /// The difficulty levels adjust the minimum and maximum number of cells removed as follows:
+        /// - Easy: 36 to 45 cells
+        /// - Medium: 46 to 50 cells
+        /// - Hard: 51 to 55 cells
+        /// - Evil: 56 to 70 cells
+        /// </remarks>
         public static void SetDifficulty(int difficulty) 
         {
             switch (difficulty)
@@ -104,59 +117,63 @@ namespace SudokuApp.Models
         /// </summary>
         private bool FillRemaining(int i, int j, int[,] board)
         {
+            // Move to the next row if we're at the end of the current one
             if (j >= 9 && i < 9 - 1)
             {
                 j = 0;
                 i++;
             }
 
+            // If we've filled the entire board, we're done
             if (i >= 9 && j >= 9)
             {
                 return true;
             }
 
-            if (i < 3)
+            // Skip the top-left 3x3 block if we're in the first 3 rows
+            if (i < 3 && j < 3)
             {
-                if (j < 3)
-                {
-                    j = 3;
-                }
+                j = 3;
             }
-            else if (i < 6)
+            // For the next 3 rows, skip the middle 3x3 block if necessary
+            else if (i < 6 && j == (i / 3) * 3)
             {
-                if (j == (i / 3) * 3)
-                {
-                    j += 3;
-                }
+                j += 3;
             }
-            else
+            // For the last 3 rows, wrap to the next row if we're in the last 3 columns
+            else if (j == 6)
             {
-                if (j == 6)
-                {
-                    j = 0;
-                    i++;
+                j = 0;
+                i++;
 
-                    if (i >= 9)
-                    {
-                        return true;
-                    }
+                // If we've filled the entire board, we're done
+                if (i >= 9)
+                {
+                    return true;
                 }
             }
 
+            // Try numbers 1-9 in the current cell
             for (int num = 1; num <= 9; num++)
             {
                 if (IsSafe(i, j, num, board))
                 {
-                    board[i, j ] = num;
+                    board[i, j] = num;
+
                     if (FillRemaining(i, j + 1, board))
                     {
                         return true;
                     }
+
+                    // Backtrack
                     board[i, j] = 0;
                 }
             }
+
+            // If no number can be placed in the current cell, backtrack further
             return false;
         }
+
 
         /// <summary>
         /// Checks if placing a number in a specific cell is safe.
