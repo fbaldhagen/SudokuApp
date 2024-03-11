@@ -98,7 +98,7 @@ namespace SudokuApp
         private async void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
             
-            CustomMessageBox messageBox = new CustomMessageBox(this, "Do you want to generate a new puzzle?\nThis action cannot be undone.", "Generate New Puzzle"); // Using custom message boxes so the location is the center of the main window.
+            CustomMessageBox messageBox = new CustomMessageBox(this, $"Do you want to generate a new puzzle on {DifficultyComboBox.SelectionBoxItem} difficulty?", "Generate New Puzzle"); // Using custom message boxes so the location is the center of the main window.
             messageBox.ShowDialog();
             MessageBoxResult result = messageBox.Result;
             
