@@ -108,7 +108,7 @@ namespace SudokuApp
 
                 SudokuGenerator generator = new SudokuGenerator();
 
-                int[,] newPuzzle = await Task.Run(() => generator.Generate());
+                int[,] newPuzzle = await Task.Run(() => generator.GeneratePuzzle());
                 StartTimer();
 
                 for (int row = 0; row < 9; row++)

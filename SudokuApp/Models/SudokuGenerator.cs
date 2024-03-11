@@ -16,6 +16,9 @@ namespace SudokuApp.Models
         public event EventHandler<int[,]> OnSolveStep;
         private static int MinRemovedCells = 36;
         private static int MaxRemovedCells = 45;
+        private int[,] board;
+        private const int boardSize = 9;
+        private const int subgridSize = 3;
 
         /// <summary>
         /// Sets the difficulty of the Sudoku game.
@@ -54,13 +57,251 @@ namespace SudokuApp.Models
             }
         }
 
+        /// <summary>
+        /// Generates a new Sudoku puzzle with a unique solution.
+        /// </summary>
+        /// <returns>A 2D integer array representing the Sudoku puzzle.</returns>
+        public int[,] GeneratePuzzle()
+        {
+            int[,] puzzle = new int[boardSize, boardSize];
+
+            // Fill the puzzle with a valid solution.
+            FillPuzzle(puzzle);
+
+            // Remove random cells to create a puzzle.
+            RemoveCells(puzzle);
+            board = new int[boardSize, boardSize];
+            Array.Copy(puzzle, board, boardSize);
+            return puzzle;
+        }
+
+        /// <summary>
+        /// Fills the Sudoku puzzle with a valid solution using backtracking.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the puzzle.</param>
+        private static void FillPuzzle(int[,] puzzle)
+        {
+            FillPuzzleHelper(puzzle, 0, 0);
+        }
+
+        /// <summary>
+        /// Recursive helper method to fill the Sudoku puzzle with a valid solution.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the Sudoku puzzle.</param>
+        /// <param name="row">The current row index.</param>
+        /// <param name="col">The current column index.</param>
+        /// <returns></returns>
+        private static bool FillPuzzleHelper(int[,] puzzle, int row, int col)
+        {
+            // Check if we have reached the end of the puzzle.
+            if (row == boardSize)
+            {
+                return true;
+            }
+
+            // Check if we have reached the end of the current row.
+            if (col == boardSize)
+            {
+                return FillPuzzleHelper(puzzle, row + 1, 0);
+            }
+
+            // Check if the current cell is already filled.
+            if (puzzle[row, col] != 0)
+            {
+                return FillPuzzleHelper(puzzle, row, col + 1);
+            }
+
+            int[] cellNumbers = Enumerable.Range(1, 9).ToArray();
+
+            Shuffle(cellNumbers);
+
+            // Try different numbers from 1 to 9.
+            foreach (int num in cellNumbers)
+            {
+                if (IsValidNumber(puzzle, row, col, num))
+                {
+                    puzzle[row, col] = num;
+
+                    if (FillPuzzleHelper(puzzle, row, col + 1))
+                    {
+                        return true;
+                    }
+
+                    puzzle[row, col] = 0;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if a number can be placed in a specific cell of the Sudoku puzzle.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the Sudoku puzzle.</param>
+        /// <param name="row">The row index of the cell.</param>
+        /// <param name="col">The column index of the cell.</param>
+        /// <param name="num">The number to be placed in the cell.</param>
+        /// <returns>True if the number can be placed in the cell, False otherwise.</returns>
+        private static bool IsValidNumber(int[,] puzzle, int row, int col, int num)
+        {
+            // Check if the number already exists in the same row.
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (puzzle[row, i] == num)
+                {
+                    return false;
+                }
+            }
+
+            // Check if the number already exists in the same column.
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (puzzle[i, col] == num)
+                {
+                    return false;
+                }
+            }
+
+            // Check if the number already exists in the same subgrid.
+            int subgridRow = (row / subgridSize) * subgridSize;
+            int subgridCol = (col / subgridSize) * subgridSize;
+
+            for (int i = 0; i < subgridSize; i++)
+            {
+                for (int j = 0; j < subgridSize; j++)
+                {
+                    if (puzzle[subgridRow + i, subgridCol + j] == num)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes random cells from the Sudoku puzzle to create a puzzle.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the Sudoku puzzle.</param>
+        private static void RemoveCells(int[,] puzzle)
+        {
+            Random random = new Random();
+
+            // Determine the number of cells to remove.
+            //int cellsToRemove = random.Next(boardSize * boardSize / 2, boardSize * boardSize - 1);
+            int maxCellsToRemove = 60;
+            for (int i = 0; i < maxCellsToRemove; i++)
+            {
+                // Generate random coordinates.
+                int row = random.Next(boardSize);
+                int col = random.Next(boardSize);
+
+                // Skip if the cell is already empty.
+                if (puzzle[row, col] == 0)
+                {
+                    i--;
+                    continue;
+                }
+
+                // Temporarily store the cell value.
+                int temp = puzzle[row, col];
+
+                // Remove the cell value.
+                puzzle[row, col] = 0;
+
+                // Check if the puzzle still has a unique solution.
+                if (!HasUniqueSolution(puzzle))
+                {
+                    // Restore the cell value if the puzzle does not have a unique solution.
+                    puzzle[row, col] = temp;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if the Sudoku puzzle has a unique solution.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the Sudoku puzzle.</param>
+        /// <returns>True if the puzzle has a unique solution, False otherwise.</returns>
+        private static bool HasUniqueSolution(int[,] puzzle)
+        {
+            int[,] puzzleCopy = new int[boardSize, boardSize];
+
+            // Create a copy of the puzzle.
+            Array.Copy(puzzle, puzzleCopy, puzzle.Length);
+
+            // Count the number of solutions.
+            int solutionCount = 0;
+            FindSolutions(puzzleCopy, ref solutionCount);
+
+            // If there's only one solution, return true.
+            return solutionCount == 1;
+        }
+
+        /// <summary>
+        /// Finds solutions for the Sudoku puzzle recursively.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the Sudoku puzzle.</param>
+        /// <param name="count">Reference to the count of solutions found.</param>
+        private static void FindSolutions(int[,] puzzle, ref int count)
+        {
+            int row = 0;
+            int col = 0;
+
+            // Find an empty cell.
+            if (!FindEmptyCell(puzzle, ref row, ref col))
+            {
+                // No empty cell found means the puzzle is solved.
+                count++;
+                return;
+            }
+
+            // Try placing numbers from 1 to 9.
+            for (int num = 1; num <= boardSize; num++)
+            {
+                if (IsValidNumber(puzzle, row, col, num))
+                {
+                    puzzle[row, col] = num; // Place the number
+
+                    // Recur to solve the next cell.
+                    FindSolutions(puzzle, ref count);
+
+                    // If there are multiple solutions, stop searching.
+                    if (count > 1)
+                        return;
+
+                    puzzle[row, col] = 0; // Backtrack
+                }
+            }
+        }
+
+        /// <summary>
+        /// Finds the first empty cell in the Sudoku puzzle.
+        /// </summary>
+        /// <param name="puzzle">The 2D integer array representing the Sudoku puzzle.</param>
+        /// <param name="row">Reference to the row index of the empty cell found.</param>
+        /// <param name="col">Reference to the column index of the empty cell found.</param>
+        /// <returns>True if an empty cell is found, False otherwise.</returns>
+        private static bool FindEmptyCell(int[,] puzzle, ref int row, ref int col)
+        {
+            for (row = 0; row < boardSize; row++)
+            {
+                for (col = 0; col < boardSize; col++)
+                {
+                    if (puzzle[row, col] == 0)
+                        return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Generates a new Sudoku puzzle by filling a grid and removing some numbers.
         /// </summary>
         public int[,] Generate()
         {
-            int[,] board = new int[9, 9];
+            board = new int[9, 9];
 
             FillValues(board);
 
@@ -77,7 +318,7 @@ namespace SudokuApp.Models
         {
             FillDiagonal(board);
 
-            FillRemaining(0, 3, board);
+            FillRemaining(0, 3);
         }
 
         /// <summary>
@@ -115,7 +356,7 @@ namespace SudokuApp.Models
         /// <summary>
         /// Recursively fills remaining cells of the Sudoku grid.
         /// </summary>
-        private bool FillRemaining(int i, int j, int[,] board)
+        private bool FillRemaining(int i, int j)
         {
             // Move to the next row if we're at the end of the current one
             if (j >= 9 && i < 9 - 1)
@@ -136,7 +377,7 @@ namespace SudokuApp.Models
                 j = 3;
             }
             // For the next 3 rows, skip the middle 3x3 block if necessary
-            else if (i < 6 && j == (i / 3) * 3)
+            else if (i < 6 && j == (int)(i / 3) * 3)
             {
                 j += 3;
             }
@@ -156,11 +397,11 @@ namespace SudokuApp.Models
             // Try numbers 1-9 in the current cell
             for (int num = 1; num <= 9; num++)
             {
-                if (IsSafe(i, j, num, board))
+                if (IsValidNumber(board, i, j, num))
                 {
                     board[i, j] = num;
 
-                    if (FillRemaining(i, j + 1, board))
+                    if (FillRemaining(i, j + 1))
                     {
                         return true;
                     }
@@ -178,13 +419,13 @@ namespace SudokuApp.Models
         /// <summary>
         /// Checks if placing a number in a specific cell is safe.
         /// </summary>
-        public static bool IsSafe(int i, int j, int num, int[,] board)
+        public bool IsSafe(int i, int j, int num)
         {
             return (ValidRow(i, num, board) &&
-        ValidCol(j, num, board) &&
-        ValidBox(i - i % 3,
-        j - j % 3,
-        num, board));
+                    ValidCol(j, num, board) &&
+                    ValidBox(i - i % 3,
+                    j - j % 3,
+                    num, board));
         }
 
         /// <summary>
@@ -238,16 +479,16 @@ namespace SudokuApp.Models
         /// <summary>
         /// Shuffles the order of the numbers in an array.
         /// </summary>
-        private void Shuffle(int[] cellNumbers) 
+        private static int[] Shuffle(int[] cellNumbers) 
         {
             int n = cellNumbers.Length;
             while (n > 1)
             {
                 int k = random.Next(n--);
-                int temp = cellNumbers[n];
-                cellNumbers[n] = cellNumbers[k];
-                cellNumbers[k] = temp;
+                (cellNumbers[k], cellNumbers[n]) = (cellNumbers[n], cellNumbers[k]);
             }
+
+            return cellNumbers;
         }
 
         /// <summary>
@@ -302,7 +543,7 @@ namespace SudokuApp.Models
             {
                 if (cancellationToken.IsCancellationRequested) return false;
 
-                if (IsSafe(row, col, num, board))
+                if (IsValidNumber(board, row, col, num))
                 {
                     board[row, col] = num;
                     if (SolveHelper(board, cancellationToken))
@@ -325,35 +566,24 @@ namespace SudokuApp.Models
         /// </summary>
         private void RemoveNumbers(int[,] board)
         {
-            int count = 0;
-
-            while (count < MaxRemovedCells)
+            int count = MaxRemovedCells;
+            while (count != 0)
             {
-                int row = random.Next(9);
-                int col = random.Next(9);
+                Random rnd = new Random();
+                int cellId = rnd.Next(81);
 
-                while (board[row, col] == 0)
+                int i = (cellId / 9);
+                int j = cellId % 9;
+                if (j != 0)
                 {
-                    row = random.Next(9);
-                    col = random.Next(9);
+                    j--;
                 }
 
-                int backup = board[row, col];
-                int[,] boardCopy = (int[,])board.Clone();
-                boardCopy[row, col] = 0;
-
-                if (HasUniqueSolution(boardCopy))
+                // System.out.println(i+" "+j);
+                if (board[i, j] != 0)
                 {
-                    board[row, col] = 0;
-                    count++;
-                }
-                else
-                {
-                    board[row, col] = backup;
-                    if (count >= MinRemovedCells) // Stop removing cells if the minimum number of removed cells is reached and no more unique solutions can be found
-                    {
-                        break;
-                    }
+                    count--;
+                    board[i, j] = 0;
                 }
             }
         }
@@ -361,7 +591,7 @@ namespace SudokuApp.Models
         /// <summary>
         /// Checks if the Sudoku grid has a unique solution.
         /// </summary>
-        private bool HasUniqueSolution(int[,] board)
+        private bool HasUniqueSolutionII(int[,] board)
         {
             int solutions = 0;
             CountSolutions(board, ref solutions);
@@ -403,7 +633,7 @@ namespace SudokuApp.Models
 
             for (int num = 1; num <= 9; num++)
             {
-                if (IsSafe(row, col, num, board))
+                if (IsValidNumber(board, row, col, num))
                 {
                     board[row, col] = num;
                     CountSolutions(board, ref count);
@@ -428,7 +658,7 @@ namespace SudokuApp.Models
 
             for (int num = 1; num <= 9; num++)
             {
-                if (IsSafe(row, col, num, board))
+                if (IsValidNumber(board, row, col, num))
                 {
                     board[row, col] = num;
                     OnSolveStep?.Invoke(this, board);
