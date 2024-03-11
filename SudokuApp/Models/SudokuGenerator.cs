@@ -190,8 +190,7 @@ namespace SudokuApp.Models
 
             // Determine the number of cells to remove.
             //int cellsToRemove = random.Next(boardSize * boardSize / 2, boardSize * boardSize - 1);
-            int maxCellsToRemove = 60;
-            for (int i = 0; i < maxCellsToRemove; i++)
+            for (int i = 0; i < MaxRemovedCells; i++)
             {
                 // Generate random coordinates.
                 int row = random.Next(boardSize);
